@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,800;1,500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
+<style>
+:root{--base:#0B0B0D;--gold:#E8B84A;--surface:#17171B;--text:#F5F2EA;--red:#C8102E;}
+html,body{margin:0;background:var(--base);color:var(--text);-webkit-font-smoothing:antialiased;}
+*{box-sizing:border-box;}
+a{color:var(--gold);}a:hover{color:var(--text);}
+@keyframes flicker{0%,100%{transform:scale(1,1) rotate(-2deg);opacity:1}25%{transform:scale(.92,1.08) rotate(2deg);opacity:.9}50%{transform:scale(1.05,.95) rotate(-1deg)}75%{transform:scale(.96,1.06) rotate(1.5deg);opacity:.95}}
+@keyframes glow{0%,100%{opacity:.55}50%{opacity:.8}}
+</style>
+</helmet>
+
+<main style="font-family:'DM Sans',system-ui,sans-serif;background:var(--base);color:var(--text);overflow-x:hidden;">
+
+  <section data-screen-label="01 Hero" style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:72px 24px 56px;text-align:center;">
+    <div data-reveal="" style="font-size:13px;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);">{{ today }}</div>
+    <div data-reveal="" style="width:min(300px,64vw);aspect-ratio:540/880;border-radius:999px 999px 24px 24px;overflow:hidden;border:2px solid var(--gold);box-shadow:0 30px 80px -30px rgba(232,184,74,.35);">
+      <img src="assets/ibro.jpg" alt="Ibro" style="width:100%;height:100%;object-fit:cover;object-position:50% 30%;display:block;">
+    </div>
+    <div data-reveal="" style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+      <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(26px,4vw,40px);font-weight:500;">Happy Birthday,</div>
+      <h1 style="margin:0;font-family:'Playfair Display',serif;font-weight:800;font-size:clamp(110px,24vw,300px);line-height:.85;letter-spacing:-.02em;color:var(--gold);">Ibro</h1>
+    </div>
+    <p data-reveal="" style="margin:0;font-size:clamp(18px,2vw,22px);color:var(--text);opacity:.85;">Today is about you.</p>
+  </section>
+
+  <section data-screen-label="02 Candles" style="padding:120px 24px;display:flex;flex-direction:column;align-items:center;gap:44px;text-align:center;">
+    <div data-reveal="" style="display:flex;flex-direction:column;gap:12px;align-items:center;">
+      <h2 style="margin:0;font-family:'Playfair Display',serif;font-weight:700;font-size:clamp(40px,6vw,68px);line-height:1.05;">{{ cakeTitle }}</h2>
+      <p style="margin:0;font-size:17px;opacity:.75;">{{ cakeHint }}</p>
+    </div>
+    <div data-reveal="" style="display:flex;flex-direction:column;align-items:center;">
+      <div style="display:flex;gap:clamp(18px,4vw,34px);align-items:flex-end;height:110px;">
+        <sc-for list="{{ candles }}" as="c" hint-placeholder-count="5">
+          <button onClick="{{ c.blow }}" aria-label="Blow out candle" style="background:none;border:0;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;width:44px;height:110px;justify-content:flex-end;">
+            <div style="height:40px;display:flex;align-items:flex-end;justify-content:center;">{{ c.flame }}</div>
+            <div style="width:12px;height:64px;border-radius:3px;background:repeating-linear-gradient(135deg,var(--text) 0 6px,var(--gold) 6px 12px);"></div>
+          </button>
+        </sc-for>
+      </div>
+      <div style="width:min(420px,84vw);height:26px;background:var(--gold);border-radius:14px 14px 0 0;"></div>
+      <div style="width:min(420px,84vw);height:120px;background:var(--surface);border:1px solid rgba(232,184,74,.25);border-top:0;display:flex;align-items:center;justify-content:center;">
+        <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:28px;color:var(--gold);">Ibro</div>
+      </div>
+      <div style="width:min(500px,94vw);height:14px;background:var(--gold);border-radius:8px;opacity:.85;"></div>
+    </div>
+    <sc-if value="{{ allOut }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ relight }}" style="font-family:'DM Sans',sans-serif;font-size:15px;color:var(--gold);background:none;border:1px solid var(--gold);border-radius:999px;padding:12px 22px;cursor:pointer;min-height:44px;">Light them again</button>
+    </sc-if>
+  </section>
+
+  <section data-screen-label="03 The Ibro we know" style="padding:120px 24px;max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:48px;">
+    <h2 data-reveal="" style="margin:0;font-family:'Playfair Display',serif;font-weight:700;font-size:clamp(40px,6vw,68px);line-height:1.05;text-align:center;">The Ibro we know</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(440px,100%),1fr));gap:20px;">
+      <div data-reveal="" style="background:var(--surface);border-radius:20px;padding:36px 28px;display:flex;flex-direction:column;gap:14px;">
+        <div style="font-family:'Playfair Display',serif;font-size:40px;font-weight:700;color:var(--gold);">Loyal</div>
+        <p style="margin:0;font-size:16px;line-height:1.55;opacity:.82;text-wrap:pretty;">If you call, he comes. He asks what happened afterwards.</p>
+      </div>
+      <div data-reveal="" style="background:var(--surface);border-radius:20px;padding:36px 28px;display:flex;flex-direction:column;gap:14px;">
+        <div style="font-family:'Playfair Display',serif;font-size:40px;font-weight:700;color:var(--gold);">Driven</div>
+        <p style="margin:0;font-size:16px;line-height:1.55;opacity:.82;text-wrap:pretty;">Up early, home late, and still asking for one more go.</p>
+      </div>
+      <div data-reveal="" style="background:var(--surface);border-radius:20px;padding:36px 28px;display:flex;flex-direction:column;gap:14px;">
+        <div style="font-family:'Playfair Display',serif;font-size:40px;font-weight:700;color:var(--gold);">Funny</div>
+        <p style="margin:0;font-size:16px;line-height:1.55;opacity:.82;text-wrap:pretty;">Quiet for ten minutes, then one line and the whole room is gone.</p>
+      </div>
+      <div data-reveal="" style="background:var(--surface);border-radius:20px;padding:36px 28px;display:flex;flex-direction:column;gap:14px;">
+        <div style="font-family:'Playfair Display',serif;font-size:40px;font-weight:700;color:var(--gold);">Calm</div>
+        <p style="margin:0;font-size:16px;line-height:1.55;opacity:.82;text-wrap:pretty;">When everyone else is rushing, he takes a breath and sorts it out.</p>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="04 The journey" style="padding:120px 24px;max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:56px;">
+    <h2 data-reveal="" style="margin:0;font-family:'Playfair Display',serif;font-weight:700;font-size:clamp(40px,6vw,68px);line-height:1.05;text-align:center;">The story so far</h2>
+    <div style="position:relative;display:flex;flex-direction:column;gap:64px;padding-left:44px;">
+      <div style="position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:linear-gradient(var(--gold),rgba(232,184,74,.15));"></div>
+
+      <div data-reveal="" style="position:relative;display:flex;flex-direction:column;gap:12px;">
+        <div style="position:absolute;left:-44px;top:4px;width:20px;height:20px;border-radius:50%;background:var(--base);border:2px solid var(--gold);"></div>
+        <div style="font-size:13px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);">Chapter 01</div>
+        <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:clamp(32px,4.5vw,46px);font-weight:700;">The friend</h3>
+        <p style="margin:0;font-size:18px;line-height:1.65;opacity:.85;text-wrap:pretty;">Before anything else, Ibro is a good friend. He remembers the small things, checks in without being asked, and makes people feel at ease around him.</p>
+      </div>
+
+      <div data-reveal="" style="position:relative;display:flex;flex-direction:column;gap:12px;">
+        <div style="position:absolute;left:-44px;top:4px;width:20px;height:20px;border-radius:50%;background:var(--red);border:2px solid var(--red);"></div>
+        <div style="font-size:13px;letter-spacing:.28em;text-transform:uppercase;color:var(--red);font-weight:700;">Chapter 02</div>
+        <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:clamp(32px,4.5vw,46px);font-weight:700;">The player</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:24px;align-items:center;background:var(--surface);border-radius:20px;padding:20px;border-top:3px solid var(--red);">
+          <div style="aspect-ratio:4/5;border-radius:14px;overflow:hidden;">
+            <img src="assets/ibro.jpg" alt="Ibro in his black and gold kit" style="width:100%;height:100%;object-fit:cover;object-position:50% 35%;display:block;">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px;padding:4px;">
+            <p style="margin:0;font-size:18px;line-height:1.65;opacity:.88;text-wrap:pretty;">Black and gold on his back, Liverpool red in his heart. On the pitch he plays the way he lives: head up, always available, never hiding from the next pass.</p>
+            <p style="margin:0;font-size:15px;line-height:1.5;color:var(--gold);">Boots laced. Eyes on the ball. Walk on.</p>
+          </div>
+        </div>
+      </div>
+
+      <div data-reveal="" style="position:relative;display:flex;flex-direction:column;gap:12px;">
+        <div style="position:absolute;left:-44px;top:4px;width:20px;height:20px;border-radius:50%;background:var(--base);border:2px solid var(--gold);"></div>
+        <div style="font-size:13px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);">Chapter 03</div>
+        <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:clamp(32px,4.5vw,46px);font-weight:700;">The grind</h3>
+        <p style="margin:0;font-size:18px;line-height:1.65;opacity:.85;text-wrap:pretty;">The early mornings nobody sees. The long days on tired legs. The work he keeps doing when it would be easier to stop.</p>
+      </div>
+
+      <div data-reveal="" style="position:relative;display:flex;flex-direction:column;gap:12px;">
+        <div style="position:absolute;left:-44px;top:4px;width:20px;height:20px;border-radius:50%;background:var(--gold);border:2px solid var(--gold);"></div>
+        <div style="font-size:13px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);">Chapter 04</div>
+        <h3 style="margin:0;font-family:'Playfair Display',serif;font-size:clamp(32px,4.5vw,46px);font-weight:700;">What's next</h3>
+        <p style="margin:0;font-size:18px;line-height:1.65;opacity:.85;text-wrap:pretty;">Still being written. Whatever comes, he'll meet it the way he meets everything: ready, and with people in his corner.</p>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="05 The letter" style="padding:140px 24px;display:flex;justify-content:center;">
+    <article data-reveal="" style="max-width:600px;display:flex;flex-direction:column;gap:22px;font-size:19px;line-height:1.8;">
+      <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:30px;color:var(--gold);">Dear Ibro,</div>
+      <p style="margin:0;text-wrap:pretty;">I wanted to make you something that lasts longer than a message, so here it is.</p>
+      <p style="margin:0;text-wrap:pretty;">You make the people around you feel steady. You show up, you listen, and you never make a big deal of it. I don't think you know how much that means.</p>
+      <p style="margin:0;text-wrap:pretty;">I'm proud of how hard you work, and prouder of who you are when nobody is watching. I hope this year is kind to you, and that you're kind to yourself in it.</p>
+      <p style="margin:0;text-wrap:pretty;">Happy birthday. I'm glad you're here.</p>
+      <div style="font-family:'Playfair Display',serif;font-style:italic;font-size:24px;padding-top:8px;">Sono</div>
+    </article>
+  </section>
+
+  <section data-screen-label="06 Closing" style="min-height:80vh;padding:120px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;text-align:center;">
+    <div data-reveal="" style="font-size:13px;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);">One wish for the year ahead</div>
+    <p data-reveal="" style="margin:0;max-width:820px;font-family:'Playfair Display',serif;font-weight:500;font-size:clamp(34px,5.5vw,64px);line-height:1.15;text-wrap:balance;">May this year give back everything you put in.</p>
+    <div data-reveal="" style="font-family:'Playfair Display',serif;font-style:italic;font-size:24px;color:var(--gold);">From Sono</div>
+    <button data-reveal="" onClick="{{ replay }}" style="margin-top:20px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;color:var(--base);background:var(--gold);border:0;border-radius:999px;padding:14px 26px;cursor:pointer;min-height:44px;">Replay from the start</button>
+  </section>
+
+</main>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;candleCount&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:5,&quot;min&quot;:1,&quot;max&quot;:12,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Behaviour&quot;},&quot;confetti&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Behaviour&quot;},&quot;base&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#0B0B0D&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;gold&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#E8B84A&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;surface&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#17171B&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;text&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#F5F2EA&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;red&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#C8102E&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Theme&quot;}}">
+class Component extends DCLogic {
+  state = { out: [] };
+  count() { return Math.max(1, Math.min(12, this.props.candleCount ?? 5)); }
+  applyTheme() {
+    const r = document.documentElement.style, p = this.props;
+    [['base', p.base], ['gold', p.gold], ['surface', p.surface], ['text', p.text], ['red', p.red]]
+      .forEach(([k, v]) => v && r.setProperty('--' + k, v));
+  }
+  componentDidMount() {
+    this.applyTheme();
+    this.reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const els = document.querySelectorAll('[data-reveal]');
+    if (!this.reduced && 'IntersectionObserver' in window) {
+      this.io = new IntersectionObserver(es => es.forEach(e => {
+        if (e.isIntersecting) { e.target.style.opacity = '1'; e.target.style.transform = 'none'; this.io.unobserve(e.target); }
+      }), { threshold: 0.15 });
+      els.forEach((el, i) => {
+        el.style.opacity = '0'; el.style.transform = 'translateY(28px)';
+        el.style.transition = 'opacity .9s ease, transform .9s cubic-bezier(.2,.7,.2,1)';
+        this.io.observe(el);
+      });
+    }
+    setTimeout(() => this.confetti(), 500);
+  }
+  componentDidUpdate() { this.applyTheme(); }
+  componentWillUnmount() { this.io && this.io.disconnect(); cancelAnimationFrame(this.raf); this.cv && this.cv.remove(); }
+  confetti() {
+    if (this.reduced || this.props.confetti === false) return;
+    cancelAnimationFrame(this.raf); this.cv && this.cv.remove();
+    const cv = document.createElement('canvas'); this.cv = cv;
+    Object.assign(cv.style, { position: 'fixed', inset: '0', width: '100%', height: '100%', pointerEvents: 'none', zIndex: 50 });
+    document.body.appendChild(cv);
+    const dpr = window.devicePixelRatio || 1, W = innerWidth, H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    const x = cv.getContext('2d'); x.scale(dpr, dpr);
+    const gold = getComputedStyle(document.documentElement).getPropertyValue('--gold').trim() || '#E8B84A';
+    const cols = [gold, gold, '#F5D98A', '#B98A2E', '#F5F2EA'];
+    const ps = Array.from({ length: 160 }, () => ({
+      x: Math.random() * W, y: -20 - Math.random() * H * 0.6, w: 6 + Math.random() * 6, h: 3 + Math.random() * 5,
+      vy: 1.6 + Math.random() * 2.2, vx: -0.6 + Math.random() * 1.2, r: Math.random() * 6.28, vr: -0.1 + Math.random() * 0.2,
+      sw: Math.random() * 6.28, c: cols[(Math.random() * cols.length) | 0]
+    }));
+    const start = performance.now();
+    const tick = t => {
+      x.clearRect(0, 0, W, H);
+      let alive = 0; const fade = Math.max(0, 1 - Math.max(0, t - start - 3800) / 1200);
+      ps.forEach(p => {
+        p.y += p.vy; p.sw += 0.05; p.x += p.vx + Math.sin(p.sw) * 0.6; p.r += p.vr;
+        if (p.y < H + 20) alive++;
+        x.save(); x.globalAlpha = fade; x.translate(p.x, p.y); x.rotate(p.r); x.scale(1, Math.cos(p.sw * 2));
+        x.fillStyle = p.c; x.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); x.restore();
+      });
+      if (alive && fade > 0) this.raf = requestAnimationFrame(tick); else { cv.remove(); this.cv = null; }
+    };
+    this.raf = requestAnimationFrame(tick);
+  }
+  blow(i) {
+    if (this.state.out.includes(i)) return;
+    const out = [...this.state.out, i];
+    this.setState({ out });
+    if (out.length === this.count()) setTimeout(() => this.confetti(), 350);
+  }
+  flame(lit, i) {
+    const h = React.createElement;
+    if (!lit) return h('div', { style: { width: 2, height: 14, background: 'rgba(245,242,234,.35)', borderRadius: 2, marginBottom: 2 } });
+    return h('div', { style: { position: 'relative', width: 16, height: 30, display: 'flex', justifyContent: 'center' } },
+      h('div', { style: { position: 'absolute', bottom: -6, width: 44, height: 44, borderRadius: '50%', background: 'radial-gradient(circle, rgba(232,184,74,.45), rgba(232,184,74,0) 70%)', animation: `glow ${1.8 + i * 0.13}s ease-in-out infinite` } }),
+      h('div', { style: { position: 'absolute', bottom: 0, width: 14, height: 26, borderRadius: '50% 50% 50% 50% / 62% 62% 38% 38%', background: 'radial-gradient(ellipse at 50% 75%, #FFF6D6 0 22%, #F7C95A 45%, #E8892A 85%)', transformOrigin: '50% 100%', animation: `flicker ${0.9 + (i % 3) * 0.17}s ease-in-out infinite` } }));
+  }
+  renderVals() {
+    const n = this.count(), out = this.state.out, allOut = out.length >= n;
+    return {
+      today: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
+      candles: Array.from({ length: n }, (_, i) => ({ flame: this.flame(!out.includes(i), i), blow: () => this.blow(i) })),
+      allOut,
+      cakeTitle: allOut ? 'Wish made.' : 'Make a wish, Ibro',
+      cakeHint: allOut ? 'Keep it to yourself. It works better that way.' : 'Tap each candle to blow it out.',
+      relight: () => this.setState({ out: [] }),
+      replay: () => {
+        this.setState({ out: [] });
+        window.scrollTo({ top: 0, behavior: this.reduced ? 'auto' : 'smooth' });
+        setTimeout(() => this.confetti(), 900);
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
