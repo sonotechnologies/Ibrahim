@@ -1,25 +1,45 @@
-# CODING AGENTS: READ THIS FIRST
+# Happy Birthday, Ibro
 
-This is a **handoff bundle** from Claude Design (claude.ai/design).
+A single-page, mobile-first birthday tribute, built to be opened from a WhatsApp link.
 
-A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
+**Stack:** Next.js 16 (App Router) · TypeScript · Tailwind CSS 4 · Framer Motion · GSAP + ScrollTrigger · Lenis · canvas-confetti
 
-## What you should do — IMPORTANT
+## Editing the content
 
-**Read the chat transcripts first.** There are 1 chat transcript(s) in `chats/`. The transcripts show the full back-and-forth between the user and the design assistant — they tell you **what the user actually wants** and **where they landed** after iterating. Don't skip them. The final HTML files are the output, but the chat is where the intent lives.
+Everything personal lives in **`config.ts`**: name, nickname, traits, chapters, the letter, the closing wish, the sign-off, the colours (`theme.colors`, `theme.character`) and the fonts (`theme.fonts`). Change it there and the whole page follows.
 
-**Read `project/Ibro Birthday.dc.html` in full.** The user had this file open when they triggered the handoff, so it's almost certainly the primary design they want built. Read it top to bottom — don't skim. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
+- `candleCount` is fixed at 5. His age is never shown.
+- A chapter can set `outfit: "kit"` (the character changes into the black and gold kit and a ball rolls in) and `accent: "red"` (any key from `theme.colors`, or a CSS colour).
+- `musicSrc`: put an audio file in `public/` and set e.g. `"/music.mp3"`. Without it, a soft synthesised music-box "Happy Birthday" plays after the first tap. The speaker button turns all sound off and on.
 
-**If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
+## Running locally
 
-## About the design files
+```bash
+npm install
+npm run dev      # http://localhost:3000
+npm run build    # production build + type check
+```
 
-The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit.
+## Deploying on Vercel
 
-**Don't render these files in a browser or take screenshots unless the user asks you to.** Everything you need — dimensions, colors, layout rules — is spelled out in the source. Read the HTML and CSS directly; a screenshot won't tell you anything they don't.
+Import the repository in Vercel. It detects Next.js and needs no settings. The link-preview image (`app/opengraph-image.tsx`) uses `VERCEL_PROJECT_PRODUCTION_URL` automatically for absolute URLs.
 
-## Bundle contents
+## How it's put together
 
-- `README.md` — this file
-- `chats/` — conversation transcripts (read these!)
-- `project/` — the `Ibro's birthday tribute site` project files (HTML prototypes, assets, components)
+| Component | Role |
+| --- | --- |
+| `Loader` | His name writes itself letter by letter |
+| `Gate` | "Tap to start". Unlocks audio and motion sensors, then opens the curtain |
+| `Hero` | Character drops in and waves, headline springs in letter by letter, one confetti burst |
+| `Particles` | Gold dust and balloons in three depth layers, with parallax on scroll and device tilt |
+| `Cake` | Tap candles out (smoke wisps). On the last one he blows, the room dims, then the wish confetti |
+| `TraitCards` | Dealt in like cards, tilt in 3D toward the finger, words scramble into place |
+| `Journey` / `ChapterCard` | Line draws with scroll, character walks while you scroll, accent colour and outfit follow the chapter |
+| `Letter` | Envelope opens, paper slides out, the letter writes itself word by word |
+| `Closing` / `Fireworks` | The wish, the sign-off, fireworks and Replay |
+| `Character` | Inline SVG built from named groups (head, eyes, brows, mouth, torso, arms, hands, legs). Props: `pose` (idle, wave, blow, celebrate, walk, read), `outfit`, `mood`. Blinks, breathes, eyes follow the pointer or finger |
+| `MusicToggle`, `ScrollProgress`, `SmoothScroll` | Sound on/off, gold progress bar, Lenis wired into GSAP's ticker |
+
+Motion respects `prefers-reduced-motion`: no confetti, fireworks or parallax, and poses switch without tweening.
+
+No photographs are used anywhere; he only appears as the illustrated character. The original Claude Design handoff (`project/`, `chats/`, `HANDOFF.md`) is kept for reference. Its photos are not served by the site.
