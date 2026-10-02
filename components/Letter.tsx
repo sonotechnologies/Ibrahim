@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { config } from "@/config";
+import { ambient } from "@/lib/motion";
 import Character from "./Character";
 
 const { gold, paper } = config.theme.colors;
@@ -19,8 +20,8 @@ function Written({ text, className }: { text: string; className?: string }) {
           key={i}
           aria-hidden
           className="inline-block whitespace-pre"
-          initial={{ opacity: 0, y: 6, filter: "blur(5px)" }}
-          animate={seen ? { opacity: 1, y: 0, filter: "blur(0px)" } : undefined}
+          initial={{ opacity: 0, y: 6 }}
+          animate={seen ? { opacity: 1, y: 0 } : undefined}
           transition={{ duration: 0.45, delay: i * 0.055, ease: "easeOut" }}
         >
           {w + (i < words.length - 1 ? " " : "")}
@@ -86,6 +87,14 @@ export default function Letter() {
   // The room dims a little while the letter is read.
   const { scrollYProgress } = useScroll({ target: section, offset: ["start end", "end start"] });
   const dim = useTransform(scrollYProgress, [0.05, 0.25, 0.8, 0.95], [0, 1, 1, 0]);
+  // ...and the background particles slow almost to a stop.
+  const reading = useInView(section, { amount: 0.25 });
+  useEffect(() => {
+    ambient.target = reading ? 0.12 : 1;
+    return () => {
+      ambient.target = 1;
+    };
+  }, [reading]);
 
   return (
     <section ref={section} data-screen-label="Letter" className="relative px-4 py-28 sm:py-40">

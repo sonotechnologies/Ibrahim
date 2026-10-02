@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { config } from "@/config";
 import { useExperience } from "@/lib/experience";
-import { prefersReducedMotion } from "@/lib/motion";
+import { prefersReducedMotion, usePrefersReducedMotion } from "@/lib/motion";
 
 const NAME = config.nickname;
 const DISPLAY = config.theme.fonts.display;
@@ -17,6 +17,7 @@ export default function Loader() {
   const { setStage } = useExperience();
   const measure = useRef<SVGTextElement>(null);
   const [layout, setLayout] = useState<{ xs: number[]; width: number } | null>(null);
+  const reduced = usePrefersReducedMotion();
 
   useEffect(() => {
     let cancelled = false;
@@ -72,10 +73,10 @@ export default function Loader() {
                 strokeWidth={1.6}
                 strokeLinejoin="round"
                 fill="var(--c-gold)"
-                strokeDasharray={800}
-                initial={{ strokeDashoffset: 800, fillOpacity: 0 }}
-                animate={{ strokeDashoffset: 0, fillOpacity: 1 }}
-                transition={{
+                strokeDasharray={reduced ? undefined : 800}
+                initial={reduced ? { opacity: 0 } : { strokeDashoffset: 800, fillOpacity: 0 }}
+                animate={reduced ? { opacity: 1 } : { strokeDashoffset: 0, fillOpacity: 1 }}
+                transition={reduced ? { duration: 0.4 } : {
                   strokeDashoffset: { duration: DRAW, delay: i * STAGGER, ease: [0.65, 0, 0.35, 1] },
                   fillOpacity: { duration: 0.7, delay: fillDelay + i * 0.06, ease: "easeOut" },
                 }}

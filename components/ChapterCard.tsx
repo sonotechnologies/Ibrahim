@@ -26,14 +26,20 @@ const ChapterCard = forwardRef<HTMLDivElement, Props>(function ChapterCard({ cha
 
   return (
     <div ref={ref} className="relative flex min-h-[78svh] items-center py-[10svh]">
-      {/* The dot on the line */}
-      <motion.span
+      {/* The dot on the line: a ring, with a glowing fill that fades in when he reaches it */}
+      <span
         aria-hidden
-        className="absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border-2"
+        className="absolute top-1/2 grid h-4 w-4 -translate-y-1/2 place-items-center rounded-full border-2 bg-base"
         style={{ left: "calc(-1 * (var(--rail) / 2 + var(--gap)) - 8px)", borderColor: accent }}
-        animate={{ backgroundColor: active ? accent : "var(--c-base)", scale: active ? 1.25 : 1, boxShadow: active ? `0 0 18px ${accent}` : "0 0 0 transparent" }}
-        transition={{ duration: 0.5 }}
-      />
+      >
+        <motion.span
+          className="h-4 w-4 rounded-full"
+          style={{ background: accent, boxShadow: `0 0 18px ${accent}` }}
+          initial={false}
+          animate={{ opacity: active ? 1 : 0, scale: active ? 1.25 : 0.4 }}
+          transition={{ duration: 0.5 }}
+        />
+      </span>
       <motion.article
         initial={{ opacity: 0, x: 70, rotate: 2 }}
         whileInView={{ opacity: 1, x: 0, rotate: 0 }}

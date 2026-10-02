@@ -38,7 +38,7 @@ function Letters({ text, start, delay, className, stiffness = 320 }: { text: str
 }
 
 export default function Hero() {
-  const { stage, replayToken } = useExperience();
+  const { stage } = useExperience();
   const live = stage === "live";
   const ref = useRef<HTMLElement>(null);
   const [pose, setPose] = useState<Pose>("idle");
@@ -48,13 +48,6 @@ export default function Hero() {
   useEffect(() => {
     setToday(new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }));
   }, []);
-
-  // Replay resets the intro.
-  useEffect(() => {
-    if (replayToken === 0) return;
-    setLanded(false);
-    setPose("idle");
-  }, [replayToken]);
 
   const onLand = () => {
     if (landed) return;
@@ -93,7 +86,6 @@ export default function Hero() {
           style={{ background: "radial-gradient(closest-side, rgba(232,184,74,.32), rgba(232,184,74,0))" }}
         />
         <motion.div
-          key={replayToken}
           className="relative h-[min(42svh,400px)] aspect-[1/2]"
           initial={{ y: "-115svh" }}
           animate={live ? { y: 0 } : undefined}
@@ -104,7 +96,7 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      <h1 key={`h-${replayToken}`} className="relative mt-3 flex flex-col items-center font-display">
+      <h1 className="relative mt-3 flex flex-col items-center font-display">
         <Letters
           text="Happy Birthday,"
           start={live}

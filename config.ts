@@ -63,7 +63,7 @@ export const config = {
     { word: "Driven", line: "Up early, home late, and still asking for one more go." },
     { word: "Funny", line: "Quiet for ten minutes, then one line and the whole room is gone." },
     { word: "Calm", line: "When everyone else is rushing, he takes a breath and sorts it out." },
-  ] satisfies Trait[],
+  ] satisfies Trait[] as Trait[],
 
   chapters: [
     {
@@ -85,7 +85,7 @@ export const config = {
       title: "What's next",
       text: "Still being written. Whatever comes, he'll meet it the way he meets everything: ready, and with people in his corner.",
     },
-  ] satisfies Chapter[],
+  ] satisfies Chapter[] as Chapter[],
 
   letter: [
     "I wanted to make you something that lasts longer than a message, so here it is.",

@@ -1,16 +1,38 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { config, resolveColor } from "@/config";
+import { config, resolveColor, type Chapter } from "@/config";
 import Character from "./Character";
 import ChapterCard from "./ChapterCard";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const ink = config.theme.character.outline;
+const gold = config.theme.colors.gold;
+const chapterAccent = (c: Chapter) => resolveColor(c.accent);
+/** Every distinct accent gets its own layer; switching chapters crossfades opacity only. */
+const ACCENTS = [...new Set(config.chapters.map(chapterAccent))];
+
+function AccentLayers({ current, className, style }: { current: string; className: string; style: (accent: string) => React.CSSProperties }) {
+  return (
+    <>
+      {ACCENTS.map((a) => (
+        <motion.div
+          key={a}
+          aria-hidden
+          className={className}
+          style={style(a)}
+          initial={false}
+          animate={{ opacity: a === current ? 1 : 0 }}
+          transition={{ duration: 0.9, ease: "easeOut" }}
+        />
+      ))}
+    </>
+  );
+}
 
 function Ball() {
   return (
@@ -70,14 +92,9 @@ export default function Journey() {
   }, []);
 
   const chapter = chapters[active];
-  const accent = resolveColor(chapter.accent);
-  const special = Boolean(chapter.accent && chapter.accent !== "gold");
+  const accent = chapterAccent(chapter);
+  const special = accent !== gold;
   const outfit = chapter.outfit ?? "everyday";
-
-  // The accent colour fades between chapters.
-  useEffect(() => {
-    gsap.to(section.current, { "--accent": accent, duration: 0.9, ease: "power2.out" });
-  }, [accent]);
 
   return (
     <section
@@ -85,15 +102,21 @@ export default function Journey() {
       data-screen-label="Journey"
       data-chapter={active}
       className="relative py-28 sm:py-36"
-      style={{ "--accent": resolveColor(chapters[0].accent) } as CSSProperties}
     >
-      <motion.div
+      {/* Room tint in the chapter's accent; stronger for a special chapter. Fades at both ends of the section. */}
+      <div
         aria-hidden
         className="pointer-events-none sticky top-0 -mb-[100svh] h-[100svh] w-full"
-        animate={{ opacity: special ? 0.3 : 0.1 }}
-        transition={{ duration: 0.9 }}
-        style={{ background: "radial-gradient(55% 45% at 22% 50%, var(--accent), transparent 72%)" }}
-      />
+        style={{ maskImage: "linear-gradient(transparent, #000 20%, #000 80%, transparent)" }}
+      >
+        <motion.div className="absolute inset-0" initial={false} animate={{ opacity: special ? 0.3 : 0.1 }} transition={{ duration: 0.9 }}>
+          <AccentLayers
+            current={accent}
+            className="absolute inset-0"
+            style={(a) => ({ background: `radial-gradient(55% 45% at 22% 50%, ${a}, transparent 72%)` })}
+          />
+        </motion.div>
+      </div>
 
       <motion.div
         className="relative px-4 text-center"
@@ -112,17 +135,18 @@ export default function Journey() {
       >
         <div className="relative">
           <div aria-hidden className="absolute bottom-0 left-1/2 top-0 w-[2px] -translate-x-1/2 bg-gold/15" />
-          <div
-            ref={line}
-            aria-hidden
-            className="absolute bottom-0 left-1/2 top-0 w-[3px] origin-top -translate-x-1/2 rounded-full"
-            style={{ background: "linear-gradient(var(--c-gold), var(--accent))", boxShadow: "0 0 14px var(--accent)" }}
-          />
+          <div ref={line} aria-hidden className="absolute bottom-0 left-1/2 top-0 w-[3px] origin-top -translate-x-1/2 rounded-full bg-gold">
+            <AccentLayers
+              current={accent}
+              className="absolute inset-0 rounded-full"
+              style={(a) => ({ background: `linear-gradient(${gold}, ${a})`, boxShadow: `0 0 14px ${a}` })}
+            />
+          </div>
           <div className="sticky top-[calc(50svh-var(--char-h)*0.82)] mx-auto h-[var(--char-h)] w-[calc(var(--char-h)/2)]">
-            <div
-              aria-hidden
+            <AccentLayers
+              current={accent}
               className="absolute -inset-x-6 bottom-0 top-[20%] rounded-full"
-              style={{ background: "radial-gradient(closest-side, color-mix(in srgb, var(--accent) 35%, transparent), transparent)" }}
+              style={(a) => ({ background: `radial-gradient(closest-side, ${a}59, transparent)` })}
             />
             <Character pose={walking ? "walk" : "idle"} outfit={outfit} className="relative h-full w-full" />
             <AnimatePresence>

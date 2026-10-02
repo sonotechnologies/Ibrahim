@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { confettiColors, prefersReducedMotion } from "@/lib/motion";
+import { confettiColors, particleBudget, prefersReducedMotion } from "@/lib/motion";
 
 type Spark = { x: number; y: number; vx: number; vy: number; life: number; max: number; color: string; size: number };
 type Rocket = { x: number; y: number; vy: number; targetY: number; color: string };
 
-/** Soft gold fireworks on a canvas. Runs a short show each time `active` turns on. */
+/**
+ * Soft gold fireworks on a canvas. Runs a short show each time `active` turns on
+ * and stops drawing entirely when the section is off screen.
+ */
 export default function Fireworks({ active, duration = 6000 }: { active: boolean; duration?: number }) {
   const canvas = useRef<HTMLCanvasElement>(null);
 
@@ -29,6 +32,7 @@ export default function Fireworks({ active, duration = 6000 }: { active: boolean
     resize();
     window.addEventListener("resize", resize);
 
+    const budget = particleBudget();
     const sparks: Spark[] = [];
     const rockets: Rocket[] = [];
     const start = performance.now();
@@ -46,7 +50,8 @@ export default function Fireworks({ active, duration = 6000 }: { active: boolean
     };
 
     const explode = (r: Rocket) => {
-      const n = 46 + ((Math.random() * 24) | 0);
+      // Never more live sparks than the screen's particle budget.
+      const n = Math.min(Math.round(budget * 0.45) + ((Math.random() * budget * 0.15) | 0), budget - sparks.length);
       for (let i = 0; i < n; i++) {
         const a = (i / n) * Math.PI * 2;
         const s = 1.6 + Math.random() * 2.8;
@@ -56,9 +61,9 @@ export default function Fireworks({ active, duration = 6000 }: { active: boolean
 
     const tick = (t: number) => {
       const elapsed = t - start;
-      if (elapsed < duration && t - lastLaunch > 650) {
+      if (elapsed < duration && t - lastLaunch > 650 && sparks.length < budget * 0.5) {
         launch();
-        if (Math.random() < 0.35) launch();
+        if (budget > 40 && Math.random() < 0.35) launch();
         lastLaunch = t;
       }
       ctx.globalCompositeOperation = "destination-out";

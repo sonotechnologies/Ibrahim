@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, useInView, useMotionTemplate, useMotionValue, useSpring } from "framer-motion";
+import { motion, useInView, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { config } from "@/config";
-import { prefersReducedMotion } from "@/lib/motion";
+import { prefersReducedMotion, usePrefersReducedMotion } from "@/lib/motion";
 
 const GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -61,9 +61,13 @@ function TraitCard({ word, line, index, total, dealt }: { word: string; line: st
   const gy = useMotionValue(30);
   const srx = useSpring(rx, { stiffness: 180, damping: 16 });
   const sry = useSpring(ry, { stiffness: 180, damping: 16 });
-  const glare = useMotionTemplate`radial-gradient(circle at ${gx}% ${gy}%, rgba(232,184,74,.22), rgba(232,184,74,0) 55%)`;
+  // The glare is a fixed gradient blob moved with transforms, so nothing repaints.
+  const glareX = useTransform(useSpring(gx, { stiffness: 180, damping: 20 }), (v) => `${(v - 50) / 2}%`);
+  const glareY = useTransform(useSpring(gy, { stiffness: 180, damping: 20 }), (v) => `${(v - 50) / 2}%`);
+  const reduced = usePrefersReducedMotion();
 
   const aim = (clientX: number, clientY: number) => {
+    if (reduced) return;
     const b = ref.current?.getBoundingClientRect();
     if (!b) return;
     const px = (clientX - b.left) / b.width;
@@ -101,7 +105,11 @@ function TraitCard({ word, line, index, total, dealt }: { word: string; line: st
         style={{ rotateX: srx, rotateY: sry, transformStyle: "preserve-3d", background: "linear-gradient(160deg, #1d1d22, var(--c-surface) 60%, #131317)" }}
         className="relative flex h-full min-h-[190px] flex-col overflow-hidden rounded-[22px] border border-gold/15 p-5 sm:min-h-[250px] sm:p-7"
       >
-        <motion.div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: glare }} />
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute -inset-1/2"
+          style={{ x: glareX, y: glareY, background: "radial-gradient(circle at 50% 50%, rgba(232,184,74,.22), rgba(232,184,74,0) 28%)" }}
+        />
         <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.3em] text-gold/60" style={{ transform: "translateZ(20px)" }}>
           <span>{String(index + 1).padStart(2, "0")}</span>
           <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden>

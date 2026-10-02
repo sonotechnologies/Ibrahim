@@ -5,6 +5,8 @@ import { config } from "@/config";
 /**
  * Tiny sound engine. Everything is synthesised with Web Audio so the site works
  * with no audio files at all; config.musicSrc swaps the music box for a real track.
+ * Music is off until the visitor turns it on. The small effects (candle puffs,
+ * pops, chimes) play once the gate tap has unlocked audio.
  */
 
 type Note = [freq: number, beats: number];
@@ -26,8 +28,7 @@ class SoundEngine {
   private musicBus: GainNode | null = null;
   private track: HTMLAudioElement | null = null;
   private loopTimer: number | null = null;
-  private musicStarted = false;
-  enabled = true;
+  private musicOn = false;
 
   /** Must be called from a user gesture (the gate tap). */
   unlock() {
@@ -37,10 +38,10 @@ class SoundEngine {
       if (!Ctx) return;
       this.ctx = new Ctx();
       this.master = this.ctx.createGain();
-      this.master.gain.value = this.enabled ? 1 : 0;
+      this.master.gain.value = 1;
       this.master.connect(this.ctx.destination);
       this.musicBus = this.ctx.createGain();
-      this.musicBus.gain.value = 0.5;
+      this.musicBus.gain.value = 0;
       this.musicBus.connect(this.master);
     }
     void this.ctx.resume();
@@ -48,31 +49,27 @@ class SoundEngine {
       this.track = new Audio(config.musicSrc);
       this.track.loop = true;
       this.track.volume = 0.45;
-      this.track.muted = !this.enabled;
       this.track.preload = "auto";
     }
   }
 
-  startMusic() {
-    if (this.musicStarted) return;
-    this.musicStarted = true;
+  /** Turn music on or off. Safe to call before unlock; it starts on the next unlock. */
+  setMusic(on: boolean) {
+    this.musicOn = on;
+    if (!this.ctx) this.unlock();
+    const ctx = this.ctx;
     if (this.track) {
-      void this.track.play().catch(() => {});
+      if (on) void this.track.play().catch(() => {});
+      else this.track.pause();
       return;
     }
-    this.playMelody();
-  }
-
-  setEnabled(on: boolean) {
-    this.enabled = on;
-    if (this.ctx && this.master) {
-      this.master.gain.cancelScheduledValues(this.ctx.currentTime);
-      this.master.gain.setTargetAtTime(on ? 1 : 0, this.ctx.currentTime, 0.08);
-    }
-    if (this.track) {
-      this.track.muted = !on;
-      if (on && this.musicStarted && this.track.paused) void this.track.play().catch(() => {});
-    }
+    if (!ctx || !this.musicBus) return;
+    void ctx.resume();
+    this.musicBus.gain.cancelScheduledValues(ctx.currentTime);
+    this.musicBus.gain.setTargetAtTime(on ? 0.5 : 0, ctx.currentTime, 0.15);
+    if (this.loopTimer) window.clearTimeout(this.loopTimer);
+    this.loopTimer = null;
+    if (on) this.playMelody();
   }
 
   private playMelody() {
@@ -84,7 +81,7 @@ class SoundEngine {
       t += beats * BEAT;
     }
     const length = (t - ctx.currentTime + LOOP_GAP) * 1000;
-    this.loopTimer = window.setTimeout(() => this.playMelody(), length);
+    this.loopTimer = window.setTimeout(() => this.musicOn && this.playMelody(), length);
   }
 
   private bell(freq: number, at: number, volume: number, out: AudioNode) {

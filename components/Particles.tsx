@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, type RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { motion, useScroll, useSpring, useTransform, type MotionValue } from "framer-motion";
 import { config } from "@/config";
-import { tiltX, tiltY, usePrefersReducedMotion } from "@/lib/motion";
+import { ambient, particleBudget, prefersReducedMotion, tiltX, tiltY, usePrefersReducedMotion } from "@/lib/motion";
 
 const { gold, text } = config.theme.colors;
 const BALLOON_COLORS = [gold, text, "#B98A2E", "#F5D98A", gold, "#2A2A31"];
@@ -45,9 +45,11 @@ export default function Particles({ active, sectionRef }: { active: boolean; sec
 
   useEffect(() => {
     const r = Math.random;
-    setDust(Array.from({ length: 28 }, () => ({ left: r() * 100, top: r() * 100, size: 1.5 + r() * 3, delay: -r() * 6, dur: 5 + r() * 5 })));
+    // The hero takes about 30% of the particle budget; the ambient layer takes the rest.
+    const budget = particleBudget();
+    setDust(Array.from({ length: Math.round(budget * 0.3) }, () => ({ left: r() * 100, top: r() * 100, size: 1.5 + r() * 3, delay: -r() * 6, dur: 5 + r() * 5 })));
     setBalloons(
-      Array.from({ length: 7 }, (_, i) => ({
+      Array.from({ length: budget > 40 ? 7 : 5 }, (_, i) => ({
         left: 4 + ((i * 14 + r() * 8) % 92),
         size: 26 + r() * 26,
         delay: i * 2.6 + r() * 2,
@@ -80,6 +82,7 @@ export default function Particles({ active, sectionRef }: { active: boolean; sec
               />
             ))}
           {active &&
+            !reduced &&
             balloons
               .filter((_, i) => i % 3 === li)
               .map((b, i) => (
@@ -100,4 +103,82 @@ export default function Particles({ active, sectionRef }: { active: boolean; sec
       ))}
     </div>
   );
+}
+
+/**
+ * A few slow motes drifting behind the whole page so no section ever feels still.
+ * Speed follows `ambient.target` (the letter slows it). Pauses when the tab is hidden.
+ */
+export function AmbientParticles() {
+  const canvas = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const cv = canvas.current;
+    const ctx = cv?.getContext("2d");
+    if (!cv || !ctx) return;
+    const reduced = prefersReducedMotion();
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    let W = 0, H = 0;
+    const resize = () => {
+      W = window.innerWidth;
+      H = window.innerHeight;
+      cv.width = W * dpr;
+      cv.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const count = Math.round(particleBudget() * 0.55);
+    const motes = Array.from({ length: count }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: 0.6 + Math.random() * 1.8,
+      vy: -(0.12 + Math.random() * 0.35),
+      vx: (Math.random() - 0.5) * 0.15,
+      a: 0.15 + Math.random() * 0.45,
+      phase: Math.random() * Math.PI * 2,
+    }));
+
+    let raf = 0;
+    let last = performance.now();
+    const draw = (t: number) => {
+      const dt = Math.min(3, (t - last) / 16.7);
+      last = t;
+      ambient.speed += (ambient.target - ambient.speed) * 0.04 * dt;
+      const sp = ambient.speed * dt;
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = gold;
+      for (const m of motes) {
+        m.y += m.vy * sp;
+        m.x += m.vx * sp;
+        m.phase += 0.01 * sp;
+        if (m.y < -4) { m.y = H + 4; m.x = Math.random() * W; }
+        if (m.x < -4) m.x = W + 4;
+        if (m.x > W + 4) m.x = -4;
+        ctx.globalAlpha = m.a * (0.6 + 0.4 * Math.sin(m.phase));
+        ctx.beginPath();
+        ctx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      if (!reduced) raf = requestAnimationFrame(draw);
+    };
+    const start = () => {
+      cancelAnimationFrame(raf);
+      last = performance.now();
+      raf = requestAnimationFrame(draw);
+    };
+    const onVisibility = () => (document.hidden ? cancelAnimationFrame(raf) : start());
+    document.addEventListener("visibilitychange", onVisibility);
+    start();
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", resize);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, []);
+
+  return <canvas ref={canvas} aria-hidden className="pointer-events-none fixed inset-0 z-0 h-full w-full" />;
 }

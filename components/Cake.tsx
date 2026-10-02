@@ -3,10 +3,10 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { config } from "@/config";
-import { useExperience } from "@/lib/experience";
 import { confettiBurst } from "@/lib/motion";
 import { sound } from "@/lib/sound";
 import Character, { type Pose } from "./Character";
+import Magnetic from "./Magnetic";
 
 const N = config.candleCount;
 const { gold, text } = config.theme.colors;
@@ -33,7 +33,7 @@ function Candle({ lit, index, onBlow, disabled }: { lit: boolean; index: number;
       onClick={onBlow}
       disabled={disabled || !lit}
       aria-label={lit ? `Blow out candle ${index + 1}` : `Candle ${index + 1} is out`}
-      className="relative flex h-[96px] w-11 shrink-0 cursor-pointer items-end justify-center disabled:cursor-default"
+      className="relative flex h-[104px] w-12 shrink-0 cursor-pointer items-end justify-center disabled:cursor-default"
     >
       <svg viewBox="0 0 44 96" width="44" height="96" className="overflow-visible" aria-hidden>
         <defs>
@@ -142,7 +142,6 @@ function CakeStand() {
 }
 
 export default function Cake() {
-  const { replayToken } = useExperience();
   const [out, setOut] = useState<boolean[]>(() => Array(N).fill(false));
   const [phase, setPhase] = useState<Phase>("lit");
   const timers = useRef<number[]>([]);
@@ -156,11 +155,6 @@ export default function Cake() {
     setOut(Array(N).fill(false));
     setPhase("lit");
   };
-
-  useEffect(() => {
-    if (replayToken) reset();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [replayToken]);
 
   const blow = (i: number) => {
     if (out[i] || phase !== "lit") return;
@@ -195,9 +189,9 @@ export default function Cake() {
         <AnimatePresence mode="wait">
           <motion.h2
             key={done ? "done" : "wish"}
-            initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: -12, filter: "blur(6px)" }}
+            initial={{ opacity: 0, y: 18, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -12, scale: 0.97 }}
             transition={{ duration: 0.6 }}
             className="font-display text-[clamp(40px,10vw,72px)] font-bold leading-[1.02] text-balance"
           >
@@ -225,17 +219,26 @@ export default function Cake() {
         </p>
       </div>
 
-      {/* Sized so his face sits level with the flames: candles (≈70px) + cake (⅔ width) + stand (16% width). */}
-      <div className="relative mt-10 flex items-end justify-center [--cw:min(300px,58vw)]">
-        <div className="relative z-0 -mr-6 h-[calc((70px+var(--cw)*0.827)/0.86)] aspect-[1/2] shrink-0 sm:-mr-2">
+      {/*
+        The cake is wide enough for five 48px candles. He stands just behind it, sized so
+        his mouth sits a little above the cake top (cake top = 0.69 × cake width, mouth = 83% up).
+        On narrow phones he tucks further behind it so both fit.
+      */}
+      <div
+        className="relative mt-10 flex w-full items-end justify-center [--ch:calc((var(--cw)*0.69+55px)/0.83)] [--cw:min(300px,72vw)]"
+      >
+        <div
+          className="relative z-0 h-[var(--ch)] aspect-[1/2] shrink-0"
+          style={{ marginRight: "calc(-1 * max(24px, var(--cw) + var(--ch) / 2 - 100vw + 32px))" }}
+        >
           <Character pose={pose} mood={done ? "joy" : "smile"} className="h-full w-full" />
         </div>
         <div className="relative z-10 w-[var(--cw)]">
-          <div className="absolute inset-x-[9%] bottom-[80%] flex items-end justify-between">
+          <div className="absolute inset-x-[3.5%] bottom-[80%] flex items-end justify-between">
             {out.map((o, i) => (
-              <div key={i} className="-mx-2.5 sm:mx-0">
+              <Magnetic key={i} strength={0.15}>
                 <Candle lit={!o} index={i} onBlow={() => blow(i)} disabled={phase !== "lit"} />
-              </div>
+              </Magnetic>
             ))}
           </div>
           <CakeBody />
@@ -243,20 +246,16 @@ export default function Cake() {
         </div>
       </div>
 
-      <div className="mt-12 h-12">
+      <div className="mt-12 h-14">
         <AnimatePresence>
           {done && (
-            <motion.button
-              type="button"
-              onClick={reset}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ delay: 1.2 }}
-              className="min-h-11 rounded-full border border-gold/70 px-6 text-[15px] text-gold transition-colors hover:bg-gold hover:text-base"
-            >
-              Light them again
-            </motion.button>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ delay: 1.2 }}>
+              <Magnetic>
+                <button type="button" onClick={reset} className="min-h-12 rounded-full border border-gold/70 px-7 text-[15px] text-gold">
+                  Light them again
+                </button>
+              </Magnetic>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>

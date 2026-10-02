@@ -77,6 +77,17 @@ export function startTiltListening() {
   });
 }
 
+/* ---------- particle budget ---------- */
+
+/** Rough cap on live particles: about 40 on phones, 120 on larger screens. */
+export function particleBudget() {
+  if (typeof window === "undefined") return 40;
+  return window.matchMedia("(max-width: 640px)").matches ? 40 : 120;
+}
+
+/** Shared speed for the ambient background particles (1 = normal). The letter slows it down. */
+export const ambient = { speed: 1, target: 1 };
+
 /* ---------- confetti ---------- */
 
 const { gold, text } = config.theme.colors;
@@ -84,14 +95,17 @@ export const confettiColors = [gold, gold, "#F5D98A", "#B98A2E", text];
 
 export function confettiBurst(kind: "hero" | "wish" = "hero") {
   if (prefersReducedMotion()) return;
-  const shared = { colors: confettiColors, disableForReducedMotion: true, zIndex: 60, ticks: 260, gravity: 0.9, scalar: 1 };
+  // canvas-confetti particles are short-lived; scale bursts with the screen's particle budget.
+  const k = particleBudget() / 120;
+  const n = (count: number) => Math.round(count * Math.max(0.5, k));
+  const shared = { colors: confettiColors, disableForReducedMotion: true, zIndex: 60, ticks: 240, gravity: 0.9, scalar: 1 };
   if (kind === "hero") {
-    confetti({ ...shared, particleCount: 120, spread: 100, startVelocity: 48, origin: { x: 0.5, y: 0.35 } });
+    confetti({ ...shared, particleCount: n(120), spread: 100, startVelocity: 48, origin: { x: 0.5, y: 0.35 } });
     return;
   }
-  confetti({ ...shared, particleCount: 90, angle: 60, spread: 70, startVelocity: 60, origin: { x: 0, y: 0.75 } });
-  confetti({ ...shared, particleCount: 90, angle: 120, spread: 70, startVelocity: 60, origin: { x: 1, y: 0.75 } });
+  confetti({ ...shared, particleCount: n(80), angle: 60, spread: 70, startVelocity: 60, origin: { x: 0, y: 0.75 } });
+  confetti({ ...shared, particleCount: n(80), angle: 120, spread: 70, startVelocity: 60, origin: { x: 1, y: 0.75 } });
   window.setTimeout(() => {
-    confetti({ ...shared, particleCount: 70, spread: 160, startVelocity: 30, origin: { x: 0.5, y: 0.2 }, shapes: ["circle"] });
+    confetti({ ...shared, particleCount: n(60), spread: 160, startVelocity: 30, origin: { x: 0.5, y: 0.2 }, shapes: ["circle"] });
   }, 280);
 }

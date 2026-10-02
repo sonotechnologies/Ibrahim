@@ -4,8 +4,9 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { config } from "@/config";
 import { useExperience } from "@/lib/experience";
-import { requestTiltPermission, startTiltListening } from "@/lib/motion";
+import { requestTiltPermission, startTiltListening, usePrefersReducedMotion } from "@/lib/motion";
 import { sound } from "@/lib/sound";
+import Magnetic from "./Magnetic";
 
 const CURTAIN_EASE = [0.76, 0, 0.24, 1] as const;
 
@@ -32,6 +33,7 @@ export default function Gate() {
   const { stage, setStage } = useExperience();
   const [opening, setOpening] = useState(false);
   const [gone, setGone] = useState(false);
+  const reduced = usePrefersReducedMotion();
 
   if (gone) return null;
 
@@ -41,15 +43,17 @@ export default function Gate() {
     void requestTiltPermission().then(startTiltListening);
     sound.whoosh();
     setOpening(true);
-    window.setTimeout(() => {
-      setStage("live");
-      sound.startMusic();
-    }, 450);
+    window.setTimeout(() => setStage("live"), 450);
     window.setTimeout(() => setGone(true), 1400);
   };
 
   return (
-    <div className="fixed inset-0 z-40 overflow-hidden" style={{ pointerEvents: opening ? "none" : "auto" }}>
+    <motion.div
+      className="fixed inset-0 z-40 overflow-hidden"
+      style={{ pointerEvents: opening ? "none" : "auto" }}
+      animate={{ opacity: reduced && opening ? 0 : 1 }}
+      transition={{ duration: 0.8 }}
+    >
       <Curtain side="left" open={opening} />
       <Curtain side="right" open={opening} />
 
@@ -64,7 +68,8 @@ export default function Gate() {
       >
         <span className="text-[12px] uppercase tracking-[0.38em] text-gold/80">Something for you</span>
 
-        <span className="relative grid place-items-center">
+        <Magnetic strength={0.25}>
+        <span className="relative grid h-56 w-56 place-items-center">
           <span
             aria-hidden
             className="absolute h-56 w-56 rounded-full"
@@ -84,6 +89,7 @@ export default function Gate() {
             </svg>
           </span>
         </span>
+        </Magnetic>
 
         <span className="flex flex-col items-center gap-3">
           <span className="font-display text-[clamp(30px,8vw,52px)] font-medium italic leading-tight text-cream">
@@ -91,12 +97,14 @@ export default function Gate() {
           </span>
           <span className="flex items-center gap-2 text-sm text-cream/55">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
-              <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4zM15.5 9a4 4 0 0 1 0 6" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M9 18V6l10-2v12" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="6.5" cy="18" r="2.5" />
+              <circle cx="16.5" cy="16" r="2.5" />
             </svg>
-            Sound on makes it better
+            Music is in the top corner, if you want it
           </span>
         </span>
       </motion.button>
-    </div>
+    </motion.div>
   );
 }
